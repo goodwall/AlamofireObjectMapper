@@ -109,7 +109,7 @@ extension DataRequest {
             let JSONObject = processResponse(request: request, response: response, data: data, keyPath: keyPath)
             
             if let JSONObject = JSONObject,
-                let parsedObject = (try? Mapper<T>(context: context, shouldIncludeNilValues: false).map(JSONObject: JSONObject) as T) {
+                let parsedObject = (try? Mapper<T>(context: context, shouldIncludeNilValues: false).map(JSONObject: JSONObject)){
                 return parsedObject
             } else {
                 let failureReason = "ObjectMapper failed to serialize response."
@@ -129,13 +129,13 @@ extension DataRequest {
      - returns: The request.
      */
     @discardableResult
-    public func responseObject<T: BaseMappable>(queue: DispatchQueue = .main, keyPath: String? = nil, mapToObject object: T? = nil, context: MapContext? = nil, completionHandler: @escaping (AFDataResponse<T>) -> Void) -> Self {
-        return response(queue: queue, responseSerializer: DataRequest.ObjectMapperSerializer(keyPath, mapToObject: object, context: context), completionHandler: completionHandler)
+    public func responseObject<T: BaseMappable>(queue: DispatchQueue? = nil, keyPath: String? = nil, mapToObject object: T? = nil, context: MapContext? = nil, completionHandler: @escaping (DataResponse<T, AFError>) -> Void) -> Self {
+        return response(queue: queue ?? DispatchQueue.main, responseSerializer: DataRequest.ObjectMapperSerializer(keyPath, mapToObject: object, context: context), completionHandler: completionHandler)
     }
     
     @discardableResult
-    public func responseObject<T: ImmutableMappable>(queue: DispatchQueue = .main, keyPath: String? = nil, mapToObject object: T? = nil, context: MapContext? = nil, completionHandler: @escaping (AFDataResponse<T>) -> Void) -> Self {
-        return response(queue: queue, responseSerializer: DataRequest.ObjectMapperImmutableSerializer(keyPath, context: context), completionHandler: completionHandler)
+    public func responseObject<T: ImmutableMappable>(queue: DispatchQueue? = nil, keyPath: String? = nil, mapToObject object: T? = nil, context: MapContext? = nil, completionHandler: @escaping (DataResponse<T, AFError>) -> Void) -> Self {
+        return response(queue: queue ?? DispatchQueue.main, responseSerializer: DataRequest.ObjectMapperImmutableSerializer(keyPath, context: context), completionHandler: completionHandler)
     }
     
     /// BaseMappable Array Serializer
@@ -165,7 +165,7 @@ extension DataRequest {
             
             if let JSONObject = processResponse(request: request, response: response, data: data, keyPath: keyPath){
                 
-                if let parsedObject = try? Mapper<T>(context: context, shouldIncludeNilValues: false).mapArray(JSONObject: JSONObject) as [T] {
+                if let parsedObject = try? Mapper<T>(context: context, shouldIncludeNilValues: false).mapArray(JSONObject: JSONObject){
                     return parsedObject
                 }
             }
@@ -185,8 +185,8 @@ extension DataRequest {
      - returns: The request.
      */
     @discardableResult
-    public func responseArray<T: BaseMappable>(queue: DispatchQueue = .main, keyPath: String? = nil, context: MapContext? = nil, completionHandler: @escaping (AFDataResponse<[T]>) -> Void) -> Self {
-        return response(queue: queue, responseSerializer: DataRequest.ObjectMapperArraySerializer(keyPath, context: context), completionHandler: completionHandler)
+    public func responseArray<T: BaseMappable>(queue: DispatchQueue? = nil, keyPath: String? = nil, context: MapContext? = nil, completionHandler: @escaping (DataResponse<[T], AFError>) -> Void) -> Self {
+        return response(queue: queue ?? DispatchQueue.main, responseSerializer: DataRequest.ObjectMapperArraySerializer(keyPath, context: context), completionHandler: completionHandler)
     }
     
     /**
@@ -196,11 +196,11 @@ extension DataRequest {
      - parameter keyPath: The key path where object mapping should be performed
      - parameter completionHandler: A closure to be executed once the request has finished and the data has been mapped by ObjectMapper.
      
-     - returns: The request.
+     - returns: The request.DispatchQueue.main ??
      */
     @discardableResult
-    public func responseArray<T: ImmutableMappable>(queue: DispatchQueue = .main, keyPath: String? = nil, context: MapContext? = nil, completionHandler: @escaping (AFDataResponse<[T]>) -> Void) -> Self {
-        return response(queue: queue, responseSerializer: DataRequest.ObjectMapperImmutableArraySerializer(keyPath, context: context), completionHandler: completionHandler)
+    public func responseArray<T: ImmutableMappable>(queue: DispatchQueue? = nil, keyPath: String? = nil, context: MapContext? = nil, completionHandler: @escaping (DataResponse<[T], AFError>) -> Void) -> Self {
+        return response(queue: queue ?? DispatchQueue.main, responseSerializer: DataRequest.ObjectMapperImmutableArraySerializer(keyPath, context: context), completionHandler: completionHandler)
     }
 }
 
